@@ -13,11 +13,13 @@
             display: flex;
             flex-direction: column;
         }
+        a { text-decoration: none; }
+        a:hover { text-decoration: underline; }
 
-        /* 상단 검은색 네비게이션 바 */
+        /* 네비게이션 바 - 검정 */
         .navbar {
             background: #101010;
-            padding: 0 24px;
+            padding: 0 20px;
             height: 48px;
             display: flex;
             align-items: center;
@@ -28,170 +30,155 @@
             right: 0;
             z-index: 100;
         }
-        .nav-left { display: flex; align-items: center; gap: 24px; }
-        .nav-logo {
-            width: 36px; height: 36px;
-            background: #E2231A;
-            border-radius: 6px;
+        .nav-left {
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: bold;
-            color: white;
-            text-decoration: none;
+            gap: 20px;
+        }
+        .nav-logo {
+            width: 36px; height: 36px;
+            display: block;
+        }
+        .nav-logo svg {
+            width: 100%; height: 100%;
         }
         .nav-link {
-            color: #999;
-            text-decoration: none;
+            color: #aaa;
             font-size: 13px;
             font-weight: 500;
-            letter-spacing: 0.3px;
         }
-        .nav-link:hover { color: white; }
-        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-link:hover { color: #fff; }
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-search {
+            background: rgba(255,255,255,0.08);
+            border: none;
+            border-radius: 20px;
+            padding: 7px 14px;
+            color: #fff;
+            font-size: 12px;
+            width: 180px;
+            outline: none;
+        }
+        .nav-search::placeholder { color: #666; }
         .nav-signup {
-            background: transparent;
             color: #ccc;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 5px 16px;
             border: 1px solid #555;
             border-radius: 30px;
-            padding: 6px 18px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
         }
-        .nav-signup:hover { border-color: #888; color: white; }
-        .nav-login {
-            background: #E2231A;
-            color: white;
-            border: none;
-            border-radius: 30px;
-            padding: 6px 18px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-        }
-        .nav-login:hover { background: #c41f17; }
+        .nav-signup:hover { border-color: #888; color: #fff; text-decoration: none; }
 
-        /* 메인 콘텐츠 */
+        /* 메인 */
         .main-container {
             flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding-top: 48px;
+            padding: 80px 16px 60px;
             min-height: 100vh;
         }
 
+        /* 로그인 카드 */
         .login-card {
-            background: white;
+            background: #fff;
             border-radius: 12px;
-            padding: 40px 32px 32px;
-            width: 380px;
-            max-width: 92%;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            padding: 36px 28px 28px;
+            width: 360px;
+            max-width: 100%;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.06);
             text-align: center;
         }
 
-        /* Roblox 로고 */
         .rbx-logo {
-            width: 60px;
-            height: 60px;
-            margin: 0 auto 12px;
-            background: #E2231A;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            margin: 0 auto 10px;
+            width: 56px; height: 56px;
         }
-        .rbx-logo svg { width: 36px; height: 36px; }
+        .rbx-logo svg { width: 100%; height: 100%; }
 
         h1 {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 700;
-            color: #000;
-            margin-bottom: 20px;
-            letter-spacing: -0.3px;
+            color: #111;
+            margin-bottom: 18px;
         }
 
         .input-group {
             text-align: left;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
         .input-group label {
             display: block;
             font-size: 12px;
             font-weight: 600;
             color: #555;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
         .input-group input {
             width: 100%;
-            padding: 11px 13px;
-            border: 1px solid #d5d7dd;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
             border-radius: 6px;
             font-size: 14px;
-            background: white;
+            background: #fff;
             outline: none;
-            color: #000;
+            color: #111;
         }
         .input-group input:focus {
             border-color: #E2231A;
-            box-shadow: 0 0 0 2px rgba(226,35,26,0.08);
         }
 
         .login-btn {
             width: 100%;
-            padding: 12px;
+            padding: 11px;
             background: #E2231A;
-            color: white;
+            color: #fff;
             border: none;
             border-radius: 30px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
-            margin-top: 6px;
+            margin-top: 4px;
             cursor: pointer;
-            transition: background 0.15s;
         }
         .login-btn:hover { background: #c41f17; }
 
         .forgot-link {
             display: block;
             text-align: center;
-            margin-top: 14px;
+            margin-top: 12px;
             font-size: 12px;
             color: #E2231A;
-            text-decoration: none;
             font-weight: 600;
         }
-        .forgot-link:hover { text-decoration: underline; }
 
         .divider {
             display: flex;
             align-items: center;
-            margin: 20px 0;
-            color: #888;
+            margin: 18px 0;
+            color: #999;
             font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.5px;
         }
         .divider::before,
         .divider::after {
             content: '';
             flex: 1;
             height: 1px;
-            background: #e0e0e0;
+            background: #e5e5e5;
         }
-        .divider span { padding: 0 14px; }
+        .divider span { padding: 0 12px; }
 
         .device-btn {
             width: 100%;
             padding: 10px;
-            background: white;
+            background: #fff;
             color: #555;
-            border: 1px solid #d5d7dd;
+            border: 1px solid #ddd;
             border-radius: 30px;
             font-size: 13px;
             font-weight: 600;
@@ -199,61 +186,59 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
         }
-        .device-btn:hover { background: #f5f5f5; }
+        .device-btn:hover { background: #f9f9f9; }
 
         .signup-text {
-            margin-top: 20px;
+            margin-top: 18px;
             font-size: 13px;
-            color: #666;
+            color: #777;
         }
         .signup-text a {
             color: #E2231A;
-            text-decoration: none;
             font-weight: 700;
         }
-        .signup-text a:hover { text-decoration: underline; }
 
         .error-msg {
             color: #E2231A;
             font-size: 12px;
             margin-top: 10px;
             display: none;
-            padding: 8px 10px;
+            padding: 8px;
             background: #fef0ef;
             border-radius: 6px;
         }
 
-        /* 푸터 */
+        /* 푸터 - 검정 */
         .footer {
             background: #101010;
-            padding: 18px 24px;
+            padding: 16px 20px;
             text-align: center;
         }
         .footer-links {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 14px;
+            gap: 12px;
             list-style: none;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .footer-links a {
             color: #888;
-            text-decoration: none;
-            font-size: 11px;
+            font-size: 10px;
         }
-        .footer-links a:hover { color: white; }
+        .footer-links a:hover { color: #fff; }
         .footer-copy {
             color: #555;
             font-size: 10px;
         }
 
         @media (max-width: 480px) {
-            .login-card { padding: 28px 20px 24px; border-radius: 0; box-shadow: none; }
+            .login-card { padding: 24px 16px 20px; border-radius: 0; box-shadow: none; }
             .navbar { padding: 0 12px; }
             .nav-link { display: none; }
+            .nav-search { width: 100px; }
         }
     </style>
 </head>
@@ -262,15 +247,20 @@
     <!-- 네비게이션 바 -->
     <nav class="navbar">
         <div class="nav-left">
-            <a href="/" class="nav-logo">R</a>
+            <a href="/" class="nav-logo">
+                <svg viewBox="0 0 36 36" fill="none">
+                    <rect width="36" height="36" rx="8" fill="#E2231A"/>
+                    <path d="M12 24L24 12M12 12L24 24" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+            </a>
             <a href="#" class="nav-link">차트</a>
             <a href="#" class="nav-link">마켓플레이스</a>
             <a href="#" class="nav-link">만들기</a>
             <a href="#" class="nav-link">Robux</a>
         </div>
         <div class="nav-right">
+            <input class="nav-search" type="text" placeholder="검색" disabled>
             <a href="#" class="nav-signup">회원가입</a>
-            <a href="#" class="nav-login">로그인</a>
         </div>
     </nav>
 
@@ -278,11 +268,10 @@
     <div class="main-container">
         <div class="login-card">
 
-            <!-- 빨간색 R 로고 -->
             <div class="rbx-logo">
-                <svg viewBox="0 0 36 36" fill="none">
-                    <rect x="2" y="2" width="32" height="32" rx="7" fill="white" opacity="0.25"/>
-                    <path d="M10 26L26 10M10 10L26 26" stroke="white" stroke-width="3.2" stroke-linecap="round"/>
+                <svg viewBox="0 0 56 56" fill="none">
+                    <rect width="56" height="56" rx="12" fill="#E2231A"/>
+                    <path d="M18 38L38 18M18 18L38 38" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/>
                 </svg>
             </div>
 
@@ -298,6 +287,7 @@
                     <input type="password" id="password" placeholder="비밀번호" required>
                 </div>
                 <button class="login-btn" type="submit">로그인</button>
+
                 <a href="#" class="forgot-link">비밀번호 또는 사용자 이름을 잊으셨나요?</a>
 
                 <div class="divider"><span>로그인 방법</span></div>
